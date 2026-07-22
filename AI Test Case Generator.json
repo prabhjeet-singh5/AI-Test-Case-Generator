@@ -1,0 +1,242 @@
+{
+  "name": "AI Test Case Generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        64
+      ],
+      "id": "7d32350c-f423-4c82-9e10-01a060ef4c8d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "131885e6-c07a-432d-ad67-bda5868b1469",
+              "name": "requirement",
+              "value": "As a user, I can reset my password via a link sent to my email",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        64
+      ],
+      "id": "9803f52b-1a37-4c81-9ac3-1ef832f17c8a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a senior QA engineer. Given a software requirement or user story, generate thorough test cases covering happy path, edge cases, and negative/error scenarios. Return ONLY valid JSON: an array of objects with keys \"title\", \"preconditions\", \"steps\" (numbered string), \"expected_result\", and \"priority\" (High/Medium/Low). Do not include any text outside the JSON.",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.requirement }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        448,
+        64
+      ],
+      "id": "3ebb69bd-d12e-4698-99a0-9bd898077355",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "9hgQNkz7mwNBVxR2",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Grab the model's text output\nconst raw = $input.first().json.message.content;\n\n// Clean any stray markdown fences GPT sometimes adds\nlet text = raw.trim()\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/, '')\n  .replace(/```$/, '')\n  .trim();\n\n// Parse the JSON array and emit one item per test case\nconst cases = JSON.parse(text);\nreturn cases.map(tc => ({ json: tc }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        64
+      ],
+      "id": "38054a13-e610-41ea-a135-1b24bd125fe6",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1y99SpEuuEegcAvKRyhI70S2JGs9H-6EvH1dGqriLBUs",
+          "mode": "list",
+          "cachedResultName": "Untitled spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1y99SpEuuEegcAvKRyhI70S2JGs9H-6EvH1dGqriLBUs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1y99SpEuuEegcAvKRyhI70S2JGs9H-6EvH1dGqriLBUs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{ $json.title }}",
+            "preconditions": "={{ $json.preconditions }}",
+            "steps": "={{ $json.steps }}",
+            "expected_result": "={{ $json.expected_result }}",
+            "priority": "={{ $json.priority }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "preconditions",
+              "displayName": "preconditions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "steps",
+              "displayName": "steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expected_result",
+              "displayName": "expected_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1024,
+        64
+      ],
+      "id": "8961f2e6-af99-417e-bb78-4b2cdef428ec",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "nPls8d8KqGj2OVXC",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6e6dbc22-309b-45fb-a1af-48c7baf5b628",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2e2cc32cdfbcaac75e26694bcf547aeb93800c45baeec1948fc56e03b0fd0c4b"
+  },
+  "id": "K7NUBJ8AwFnQmCDA",
+  "tags": []
+}
